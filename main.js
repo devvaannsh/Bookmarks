@@ -1,44 +1,55 @@
-/*global define, brackets, $ */
-
-// See detailed docs in https://docs.phcode.dev/api/creating-extensions
-
-// A good place to look for code examples for extensions: https://github.com/phcode-dev/phoenix/tree/main/src/extensions/default
-
-// A simple extension that adds an entry in "file menu> hello world"
 define(function (require, exports, module) {
-    "use strict";
+    const AppInit = brackets.getModule("utils/AppInit");
+    const CommandManager = brackets.getModule("command/CommandManager");
+    const Menus = brackets.getModule("command/Menus");
+    const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
 
-    // Brackets modules
-    const AppInit = brackets.getModule("utils/AppInit"),
-        DefaultDialogs = brackets.getModule("widgets/DefaultDialogs"),
-        Dialogs = brackets.getModule("widgets/Dialogs"),
-        CommandManager = brackets.getModule("command/CommandManager"),
-        Menus = brackets.getModule("command/Menus");
+    const Bookmarks = require("./src/bookmarks");
+    ExtensionUtils.loadStyleSheet(module, "styles/style.less");
 
-    // Function to run when the menu item is clicked
-    function handleHelloWorld() {
-        Dialogs.showModalDialog(
-            DefaultDialogs.DIALOG_ID_INFO,
-            "hello",
-            "world"
-        );
+    // command ids
+    const CMD_TOGGLE_BOOKMARK = "bookmarks.toggleBookmark";
+    const CMD_NEXT_BOOKMARK = "bookmarks.nextBookmark";
+    const CMD_PREV_BOOKMARK = "bookmarks.prevBookmark";
+
+    const Strings = {
+        TOGGLE_BOOKMARK: "Toggle Bookmark",
+        GOTO_NEXT_BOOKMARK: "Go to Next Bookmark",
+        GOTO_PREV_BOOKMARK: "Go to Previous Bookmark"
+    };
+
+    // default keyboard shortcuts
+    const TOGGLE_BOOKMARK_KB_SHORTCUT = "Ctrl-Alt-B";
+    const NEXT_BOOKMARK_KB_SHORTCUT = "Ctrl-Alt-N";
+    const PREV_BOOKMARK_KB_SHORTCUT = "Ctrl-Alt-P";
+
+    /**
+     * This function is responsible for registering all the required commands
+     */
+    function _registerCommands() {
+        CommandManager.register(Strings.TOGGLE_BOOKMARK, CMD_TOGGLE_BOOKMARK, Bookmarks.toggleBookmark);
+        CommandManager.register(Strings.GOTO_NEXT_BOOKMARK, CMD_NEXT_BOOKMARK, Bookmarks.goToNextBookmark);
+        CommandManager.register(Strings.GOTO_PREV_BOOKMARK, CMD_PREV_BOOKMARK, Bookmarks.goToPrevBookmark);
     }
-    
-      // First, register a command - a UI-less object associating an id to a handler
-    var MY_COMMAND_ID = "helloworld.sayhello";   // package-style naming to avoid collisions
-    CommandManager.register("Hello World", MY_COMMAND_ID, handleHelloWorld);
 
-    // Then create a menu item bound to the command
-    // The label of the menu item is the name we gave the command (see above)
-    var menu = Menus.getMenu(Menus.AppMenuBar.FILE_MENU);
-    menu.addMenuItem(MY_COMMAND_ID);
-    
-    // We could also add a key binding at the same time:
-    //menu.addMenuItem(MY_COMMAND_ID, "Ctrl-Alt-W");
-    // (Note: "Ctrl" is automatically mapped to "Cmd" on Mac)
-    
-    // Initialize extension once shell is finished initializing.
+    /**
+     * This function is responsible to add the bookmarks menu items to the navigate menu
+     */
+    function _addItemsToMenu() {
+        const navigateMenu = Menus.getMenu(Menus.AppMenuBar.NAVIGATE_MENU);
+        navigateMenu.addMenuDivider(); // add a line to separate the other items from the bookmark ones
+
+        navigateMenu.addMenuItem(CMD_TOGGLE_BOOKMARK, TOGGLE_BOOKMARK_KB_SHORTCUT);
+        navigateMenu.addMenuItem(CMD_NEXT_BOOKMARK, NEXT_BOOKMARK_KB_SHORTCUT);
+        navigateMenu.addMenuItem(CMD_PREV_BOOKMARK, PREV_BOOKMARK_KB_SHORTCUT);
+    }
+
+    function init() {
+        _registerCommands();
+        _addItemsToMenu();
+    }
+
     AppInit.appReady(function () {
-        console.log("hello world");
+        init();
     });
 });
