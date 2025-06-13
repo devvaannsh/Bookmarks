@@ -8,6 +8,7 @@ define(function (require, exports, module) {
     ExtensionUtils.loadStyleSheet(module, "styles/style.less");
 
     // command ids
+    const CMD_BOOKMARK_SUBMENU_ID = "bookmarks-submenu-id";
     const CMD_TOGGLE_BOOKMARK = "bookmarks.toggleBookmark";
     const CMD_NEXT_BOOKMARK = "bookmarks.nextBookmark";
     const CMD_PREV_BOOKMARK = "bookmarks.prevBookmark";
@@ -15,7 +16,8 @@ define(function (require, exports, module) {
     const Strings = {
         TOGGLE_BOOKMARK: "Toggle Bookmark",
         GOTO_NEXT_BOOKMARK: "Go to Next Bookmark",
-        GOTO_PREV_BOOKMARK: "Go to Previous Bookmark"
+        GOTO_PREV_BOOKMARK: "Go to Previous Bookmark",
+        BOOKMARK_SUBMENU: "Bookmarks"
     };
 
     // default keyboard shortcuts
@@ -44,9 +46,24 @@ define(function (require, exports, module) {
         navigateMenu.addMenuItem(CMD_PREV_BOOKMARK, PREV_BOOKMARK_KB_SHORTCUT);
     }
 
+    /**
+     * This function is responsible to add the bookmarks menu items to the context menu (that appears when user right click on the editor)
+     */
+    function _addItemsToContextMenu() {
+        const subMenu = Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU).addSubMenu(
+            Strings.BOOKMARK_SUBMENU,
+            CMD_BOOKMARK_SUBMENU_ID
+        );
+
+        subMenu.addMenuItem(CMD_TOGGLE_BOOKMARK);
+        subMenu.addMenuItem(CMD_NEXT_BOOKMARK);
+        subMenu.addMenuItem(CMD_PREV_BOOKMARK);
+    }
+
     function init() {
         _registerCommands();
         _addItemsToMenu();
+        _addItemsToContextMenu();
     }
 
     AppInit.appReady(function () {
