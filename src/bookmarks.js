@@ -1,82 +1,21 @@
+/*
+ * This file handles all the bookmark UI related functionality,
+ * like toggling the bookmark (also calls the required function to add that to BookmarksList, but that is not implemented in this file)
+ * moving to next/prev bookmarks...
+ */
 define(function (require, exports, module) {
     const EditorManager = brackets.getModule("editor/EditorManager");
-    const Editor = brackets.getModule("editor/Editor").Editor;
 
+    const Globals = require("./globals");
     const Helper = require("./helper");
+    const BookmarksList = require("./bookmarksList");
 
-    const GUTTER_NAME = "CodeMirror-bookmarkGutter",
-        BOOKMARK_PRIORITY = 10;
-
-    /**
-     * This is where all the bookmarks will be stored
-     * it is an array of objects where each object will be stored firstly based on the file and then as per line no.
-     * the sorting is done to make sure we need not access the whole complete list when trying to move back and forth
-     *
-     * @type {[{file: {String}, line: {Number}}]}
-     */
-    const BookmarksList = [];
-
-    // initialize the bookmark gutter
-    Editor.registerGutter(GUTTER_NAME, BOOKMARK_PRIORITY);
+    const GUTTER_NAME = Globals.GUTTER_NAME;
 
     /**
-     * This function is responsible to remove the bookmark from the bookmarks list
-     *
-     * @private
-     * @param {String} file - the file path
-     * @param {Number} line - the line number
-     */
-    function _removeFromBookmarksList(file, line) {
-        for (let i = 0; i < BookmarksList.length; i++) {
-            if (BookmarksList[i].file === file && BookmarksList[i].line === line) {
-                BookmarksList.splice(i, 1);
-                break;
-            }
-        }
-    }
-
-    /**
-     * This function is responsible to add the bookmark to the bookmarks list
-     * after adding that we also sort that first by file path and then by line number to make accessing efficient
-     *
-     * @private
-     * @param {String} file - the file path
-     * @param {Number} line - the line number
-     */
-    function _addToBookmarksList(file, line) {
-        BookmarksList.push({ file: file, line: line });
-
-        BookmarksList.sort((a, b) => {
-            if (a.file === b.file) {
-                return a.line - b.line;
-            }
-            return a.file.localeCompare(b.file);
-        });
-    }
-
-    /**
-     * This function toggles a bookmark on a specific line
-     *
-     * @private
-     * @param {Editor} editor - The current editor instance
-     * @param {number} line - The line number to toggle bookmark on
-     */
-    function _toggleLineBookmark(editor, line) {
-        const file = editor.document.file.fullPath; // this file path will be used when storing in the bookmarks list
-
-        // remove bookmark
-        if (Helper.hasBookmark(editor, line, GUTTER_NAME)) {
-            editor.setGutterMarker(line, GUTTER_NAME, "");
-            _removeFromBookmarksList(file, line);
-        } else {
-            // add bookmark
-            editor.setGutterMarker(line, GUTTER_NAME, Helper.createBookmarkMarker());
-            _addToBookmarksList(file, line);
-        }
-    }
-
-    /**
-     * This function is responsible to toggle bookmarks at the current cursor position(s)
+     * This function gets called when user clicks on the toggle bookmark button
+     * it checks if the line has bookmark or not, if it does it removes it otherwise adds it
+     * it also calls the required functions to add/remove the bookmarked line from the bookmarksList (refer to ./bookmarksList.js)
      */
     function toggleBookmark() {
         const editor = EditorManager.getFocusedEditor();
@@ -84,19 +23,28 @@ define(function (require, exports, module) {
             return;
         }
 
-        const selections = editor.getSelections();
-        const uniqueLines = Helper.getUniqueLines(selections);
+        const filePath = editor.document.file.fullPath;
+        const line = editor.getCursorPos().line;
 
-        // process each unique line
-        uniqueLines.forEach((line) => {
-            _toggleLineBookmark(editor, line);
-        });
+        // true if it has bookmark icon, otherwise false
+        const lineHasBookmarkIcon = !!editor.getGutterMarker(line, GUTTER_NAME);
+
+        if (lineHasBookmarkIcon) {
+            // remove the bookmark icon
+            editor.setGutterMarker(line, GUTTER_NAME, "");
+            BookmarksList.removeLineFromBookmarks(filePath, line);
+        } else {
+            // add the bookmark icon
+            editor.setGutterMarker(line, GUTTER_NAME, Helper.createBookmarkMarker());
+            BookmarksList.addLineToBookmarks(filePath, line);
+        }
     }
 
     /**
-     * This function gets executed when users click on the go to next bookmark button in the navigate menu,
-     * or its keyboard shortcut
-     * This finds the next bookmark in the current file and moves the cursor there
+     * This function gets called when user clicks on the 'go to next bookmark' button
+     * it gets all the bookmarks for the current file from the BookmarksList
+     * then it finds the closest (bigger) lineNumber from the current cursor line
+     * if none is present, we move to the first bookmark in the file
      */
     function goToNextBookmark() {
         const editor = EditorManager.getFocusedEditor();
@@ -104,42 +52,44 @@ define(function (require, exports, module) {
             return;
         }
 
-        // get the file path and line as these values are needed when searching in the bookmarks list
-        const currentFile = editor.document.file.fullPath;
-        const currentLine = editor.getCursorPos().line;
+        const filePath = editor.document.file.fullPath;
+        const currLine = editor.getCursorPos().line;
 
-        // get all the bookmarks in current file (this is already sorted by line number)
-        const fileBookmarks = BookmarksList.filter((bookmark) => bookmark.file === currentFile);
-        if (fileBookmarks.length === 0) {
+        if (!filePath || !currLine) {
             return;
         }
 
-        // find the next bookmark after current position
+        // a list of all the bookmarked lines for this current file
+        const bookmarkedLines = BookmarksList.getBookmarksList(filePath);
+
+        if (bookmarkedLines.length === 0) {
+            return;
+        }
+
+        // [Number] this will hold the line number where the next bookmark is present
         let nextBookmark = null;
 
-        // find the first bookmark after current line
-        for (let i = 0; i < fileBookmarks.length; i++) {
-            if (fileBookmarks[i].line > currentLine) {
-                nextBookmark = fileBookmarks[i];
+        // search for the next bookmark
+        for (let i = 0; i < bookmarkedLines.length; i++) {
+            if (bookmarkedLines[i] > currLine) {
+                nextBookmark = bookmarkedLines[i];
                 break;
             }
         }
 
-        // If no next bookmark found, we wrap around to get the first bookmark in this file
-        if (!nextBookmark && fileBookmarks.length > 0) {
-            nextBookmark = fileBookmarks[0];
+        // if no next bookmark is present, we move to the first bookmark in the file
+        if (!nextBookmark) {
+            nextBookmark = bookmarkedLines[0];
         }
 
-        // take the cursor to the bookmark
-        if (nextBookmark) {
-            editor.setCursorPos(nextBookmark.line, 0);
-        }
+        editor.setCursorPos(nextBookmark, 0);
     }
 
     /**
-     * This function gets executed when users click on the go to previous bookmark button in the navigate menu,
-     * or its keyboard shortcut
-     * This finds the previous bookmark in the current file and moves the cursor there
+     * This function gets called when user clicks on the 'go to prev bookmark' button
+     * it gets all the bookmarks for the current file from the BookmarksList
+     * then it finds the closest (smaller) lineNumber from the current cursor line
+     * if none is present, we move to the last bookmark in the file
      */
     function goToPrevBookmark() {
         const editor = EditorManager.getFocusedEditor();
@@ -147,30 +97,37 @@ define(function (require, exports, module) {
             return;
         }
 
-        const currentFile = editor.document.file.fullPath;
-        const currentLine = editor.getCursorPos().line;
+        const filePath = editor.document.file.fullPath;
+        const currLine = editor.getCursorPos().line;
 
-        const fileBookmarks = BookmarksList.filter((bookmark) => bookmark.file === currentFile);
-        if (fileBookmarks.length === 0) {
+        if (!filePath || !currLine) {
             return;
         }
 
+        // a list of all the bookmarked lines for this current file
+        const bookmarkedLines = BookmarksList.getBookmarksList(filePath);
+
+        if (bookmarkedLines.length === 0) {
+            return;
+        }
+
+        // [Number] this will hold the line number where the prev bookmark is present
         let prevBookmark = null;
 
-        for (let i = fileBookmarks.length - 1; i >= 0; i--) {
-            if (fileBookmarks[i].line < currentLine) {
-                prevBookmark = fileBookmarks[i];
+        // search for the prev bookmark
+        for (let i = bookmarkedLines.length - 1; i >= 0; i--) {
+            if (bookmarkedLines[i] < currLine) {
+                prevBookmark = bookmarkedLines[i];
                 break;
             }
         }
 
-        if (!prevBookmark && fileBookmarks.length > 0) {
-            prevBookmark = fileBookmarks[fileBookmarks.length - 1];
+        // if no prev bookmark is present, we move to the last bookmark in the file
+        if (!prevBookmark) {
+            prevBookmark = bookmarkedLines[bookmarkedLines.length - 1];
         }
 
-        if (prevBookmark) {
-            editor.setCursorPos(prevBookmark.line, 0);
-        }
+        editor.setCursorPos(prevBookmark, 0);
     }
 
     exports.toggleBookmark = toggleBookmark;

@@ -3,9 +3,17 @@ define(function (require, exports, module) {
     const CommandManager = brackets.getModule("command/CommandManager");
     const Menus = brackets.getModule("command/Menus");
     const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
+    const Editor = brackets.getModule("editor/Editor").Editor;
 
     const Bookmarks = require("./src/bookmarks");
+    const Globals = require("./src/globals");
     ExtensionUtils.loadStyleSheet(module, "styles/style.less");
+
+    // gutter related stuff
+    const GUTTER_NAME = Globals.GUTTER_NAME;
+    const BOOKMARK_GUTTER_PRIORITY = Globals.BOOKMARK_GUTTER_PRIORITY;
+    // initialize the bookmark gutter
+    Editor.registerGutter(GUTTER_NAME, BOOKMARK_GUTTER_PRIORITY);
 
     // command ids
     const CMD_BOOKMARK_SUBMENU_ID = "bookmarks-submenu-id";

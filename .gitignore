@@ -1,1 +1,3 @@
 test.*
+temp/
+node_modules/
