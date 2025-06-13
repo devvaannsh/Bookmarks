@@ -68,8 +68,33 @@ define(function (require, exports, module) {
         subMenu.addMenuItem(CMD_PREV_BOOKMARK);
     }
 
+
+    /**
+     * This function is responsible to add the bookmark icon to the toolbar
+     */
+    function _addIconToToolbar() {
+        const iconPath = ExtensionUtils.getModulePath(module, "assets/bookmark.svg");
+
+        // create the bookmark icon HTML using the SVG file
+        const bookmarkIcon = `
+            <a id="bookmark-icon" href="#" title="Bookmarks" class="bookmark-icon" style="width: 1em; filter: brightness(0.6) invert(0.7);">
+                <img src="${iconPath}" style="max-width: 90%; padding-top: 0.33em; padding-left: 0.15em;"/>
+            </a>
+        `;
+
+        // add the icon to the toolbar
+        $("#main-toolbar .buttons").append(bookmarkIcon);
+
+        // add the click handler for the toolbar icon
+        $("#bookmark-icon").on("click", function (e) {
+            e.preventDefault();
+            CommandManager.execute(CMD_TOGGLE_BOOKMARK);
+        });
+    }
+
     function init() {
         _registerCommands();
+        _addIconToToolbar();
         _addItemsToMenu();
         _addItemsToContextMenu();
     }
