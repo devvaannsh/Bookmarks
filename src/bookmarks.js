@@ -59,6 +59,9 @@ define(function (require, exports, module) {
             return;
         }
 
+        // read the function's jsdoc to understand why we need this
+        BookmarksList.updateBookmarksAsPerUI(editor, filePath);
+
         // a list of all the bookmarked lines for this current file
         const bookmarkedLines = BookmarksList.getBookmarksList(filePath);
 
@@ -103,6 +106,9 @@ define(function (require, exports, module) {
         if (!filePath || !currLine) {
             return;
         }
+
+        // read the function's jsdoc to understand why we need this
+        BookmarksList.updateBookmarksAsPerUI(editor, filePath);
 
         // a list of all the bookmarked lines for this current file
         const bookmarkedLines = BookmarksList.getBookmarksList(filePath);

@@ -5,6 +5,10 @@
  */
 
 define(function (require, exports, module) {
+    const Globals = require("./globals");
+
+    const GUTTER_NAME = Globals.GUTTER_NAME;
+
     /**
      * This is an object that will store all the list of the bookmarks
      * The filePath will be the key and its value will be an array which will have all the line numbers where bookmarks are present
@@ -45,8 +49,9 @@ define(function (require, exports, module) {
      *
      * @param {String} filePath - to add the line number on the list of that particular file
      * @param {Number} line - the line number to add
+     * @param {Boolean} noSort - sometimes we call this function internally to just refresh the bookmarks list as per the UI, to make sure that the Bookmarks list line numbers remains consistent to the UI. (Didn't understand: read the `updateBookmarksAsPerUI` function's jsdoc)...so when noSort is true, we don't call the `_sortBookmarkedLinesForFile` because it is already coming in a sorted manner as we are traversing the whole file from top to bottom, so to prevent function overheads and make it efficient, we pass true to noSort, this defaults to false.
      */
-    function addLineToBookmarks(filePath, line) {
+    function addLineToBookmarks(filePath, line, noSort = false) {
         if (!BookmarksList[filePath]) {
             // if filePath is not present, add it
             BookmarksList[filePath] = [line];
@@ -54,7 +59,9 @@ define(function (require, exports, module) {
             if (!BookmarksList[filePath].includes(line)) {
                 // make sure that line is not already in the bookmarks list
                 BookmarksList[filePath].push(line);
-                _sortBookmarkedLinesForFile(filePath); // this is important so that go to next/prev works as expected
+                if (!noSort) {
+                    _sortBookmarkedLinesForFile(filePath); // this is important so that go to next/prev works as expected
+                }
             }
         }
     }
@@ -82,7 +89,32 @@ define(function (require, exports, module) {
         }
     }
 
+    /**
+     * This function is needed because lets say: user created a bookmark on an empty line (lets say line 13) and then pressed enter, then codemirror moves the whole gutter below, so our bookmark icon will now be at line 14. But in our bookmarksList, it is still line 13 because that's where it was originally created. BookmarksList doesn't know that codemirror moved it below.
+     * So, now when the user clicks on lets say (go to next bookmark) expecting that it will move the cursor to line 14 (where the bookmark icon is), but it instead moves to line 13. So, when user hits the go to next/prev bookmark,
+     * we update the bookmarks list as per the UI so that it remains consistent.
+     *
+     * @param {Editor} editor - the editor instance
+     * @param {String} filePath - the current opened editor file, because we want to update the bookmarks for this file
+     */
+    function updateBookmarksAsPerUI(editor, filePath) {
+        // empty all the current bookmarks for the file path
+        BookmarksList[filePath] = [];
+
+        const lineCount = editor.lineCount();
+
+        // traverse the whole file top -> bottom, searching for bookmarks icon in the gutter, if present add the line number to the list
+        for (let line = 0; line < lineCount; line++) {
+            const lineHasBookmarkIcon = !!editor.getGutterMarker(line, GUTTER_NAME);
+
+            if (lineHasBookmarkIcon) {
+                addLineToBookmarks(filePath, line, true); // 3rd para is for noSorting...read the `addLineToBookmarks` function's jsdoc
+            }
+        }
+    }
+
     exports.getBookmarksList = getBookmarksList;
     exports.addLineToBookmarks = addLineToBookmarks;
     exports.removeLineFromBookmarks = removeLineFromBookmarks;
+    exports.updateBookmarksAsPerUI = updateBookmarksAsPerUI;
 });
