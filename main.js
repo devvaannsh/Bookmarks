@@ -7,7 +7,9 @@ define(function (require, exports, module) {
 
     const Bookmarks = require("./src/bookmarks");
     const Globals = require("./src/globals");
+    const BookmarksPanel = require("./src/bookmarksPanel");
     ExtensionUtils.loadStyleSheet(module, "styles/style.less");
+    ExtensionUtils.loadStyleSheet(module, "styles/panel.less");
 
     // gutter related stuff
     const GUTTER_NAME = Globals.GUTTER_NAME;
@@ -88,7 +90,7 @@ define(function (require, exports, module) {
         // add the click handler for the toolbar icon
         $("#bookmark-icon").on("click", function (e) {
             e.preventDefault();
-            CommandManager.execute(CMD_TOGGLE_BOOKMARK);
+            BookmarksPanel.toggleBookmarksPanel();
         });
     }
 
