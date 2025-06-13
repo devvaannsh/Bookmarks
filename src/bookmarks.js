@@ -5,7 +5,7 @@ define(function (require, exports, module) {
     const Helper = require("./helper");
 
     const GUTTER_NAME = "CodeMirror-bookmarkGutter",
-        BOOKMARK_PRIORITY = 100;
+        BOOKMARK_PRIORITY = 10;
 
     /**
      * This is where all the bookmarks will be stored
@@ -71,11 +71,7 @@ define(function (require, exports, module) {
         } else {
             // add bookmark
             editor.setGutterMarker(line, GUTTER_NAME, Helper.createBookmarkMarker());
-            console.log("----------------------");
-            console.log("I am here");
-            console.log("----------------------");
             _addToBookmarksList(file, line);
-            console.log(BookmarksList);
         }
     }
 
