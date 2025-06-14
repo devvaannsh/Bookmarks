@@ -50,19 +50,21 @@ define(function (require, exports, module) {
         e.stopPropagation();
     }
 
-    function _createFileBookmarksListUI(fileBookmarkList, $bookmarkItem) {
+    function _createFileBookmarksListUI(fileBookmarkList, filePath, $bookmarkItem) {
         const $bookmarkedLines = $("<div>").addClass("bookmarked-lines");
 
         for (let i = 0; i < fileBookmarkList.length; i++) {
             const $bookmarkedLine = $("<div>").addClass("bookmarked-line");
 
             const $bookmarkIcon = $("<div>").addClass("bookmark-icon").text("box");
-            const $lineNumber = $("<div>").addClass("line-number").text("(ln: 10)");
+            const $lineNumber = $("<div>").addClass("line-number").text(fileBookmarkList[i] + 1);
             const $lineContent = $("<div>").addClass("line-content").text("function hello() {");
+            const $deleteBookmark = $("<div>").addClass("delete-bookmark").html(`<i class="fas fa-times"></i>`);
 
             $bookmarkedLine.append($bookmarkIcon);
             $bookmarkedLine.append($lineNumber);
             $bookmarkedLine.append($lineContent);
+            $bookmarkedLine.append($deleteBookmark);
 
             $bookmarkedLines.append($bookmarkedLine);
         }
@@ -111,7 +113,7 @@ define(function (require, exports, module) {
             $bookmarkItem.append($bookmarkFileHeader);
 
             // create and append the bookmarked lines to this bookmark item
-            _createFileBookmarksListUI(fileBookmarkList, $bookmarkItem);
+            _createFileBookmarksListUI(fileBookmarkList, filePath,$bookmarkItem);
 
             // finally append the complete bookmark item to the wrapper
             $bookmarksWrapper.append($bookmarkItem);
