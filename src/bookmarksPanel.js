@@ -11,12 +11,12 @@ define(function (require, exports, module) {
 
     const BookmarksList = require("./bookmarksList");
     const Helper = require("./helper");
+    const PanelHelper = require("./panelHelper");
 
     const panelHtml = require("text!../htmlContent/panel.html");
 
     const BOOKMARKS_PANEL_ID = "bookmarks.panel";
     let BookmarksPanel = null; // this will hold the panel reference
-
 
     /**
      * This function is to display the bookmarks list if there are any bookmarks
@@ -25,10 +25,12 @@ define(function (require, exports, module) {
     function _showBookmarksList() {
         const bookmarksList = BookmarksList.getBookmarksList();
 
-        if (Object.keys(bookmarksList).length === 0) { // if no bookmarks are added
+        if (Object.keys(bookmarksList).length === 0) {
+            // if no bookmarks are added
             Helper.showNoBookmarksMessage();
         } else {
             Helper.hideNoBookmarksMessage();
+            PanelHelper.createBookmarksUI(bookmarksList);
         }
     }
 
