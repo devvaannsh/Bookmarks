@@ -11,7 +11,7 @@ define(function (require, exports, module) {
 
     const BookmarksList = require("./bookmarksList");
     const Helper = require("./helper");
-    const PanelHelper = require("./panelHelper");
+    const PanelUI = require("./panelUI");
 
     const panelHtml = require("text!../htmlContent/panel.html");
 
@@ -30,7 +30,7 @@ define(function (require, exports, module) {
             Helper.showNoBookmarksMessage();
         } else {
             Helper.hideNoBookmarksMessage();
-            PanelHelper.createBookmarksUI(bookmarksList);
+            PanelUI.createBookmarksUI(bookmarksList);
         }
     }
 
