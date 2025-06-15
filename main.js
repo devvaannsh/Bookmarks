@@ -4,6 +4,7 @@ define(function (require, exports, module) {
     const Menus = brackets.getModule("command/Menus");
     const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
     const Editor = brackets.getModule("editor/Editor").Editor;
+    const EditorManager = brackets.getModule("editor/EditorManager");
 
     const Preferences = require("./src/preferences");
     const Bookmarks = require("./src/bookmarks");
@@ -71,7 +72,6 @@ define(function (require, exports, module) {
         subMenu.addMenuItem(CMD_PREV_BOOKMARK);
     }
 
-
     /**
      * This function is responsible to add the bookmark icon to the toolbar
      */
@@ -95,8 +95,29 @@ define(function (require, exports, module) {
         });
     }
 
+    /**
+     * this function gets called whenever the active editor is changed
+     * it is needed to show the bookmarks icon as per the bookmarks list
+     *
+     * @param {Event} _event - the event instance
+     * @param {Editor} editor - the editor instance
+     */
+    function _onActiveEditorChanged(_event, editor) {
+        Bookmarks.updateUIasPerBookmarksList(editor);
+    }
+
+
+    /**
+     * registers the required handlers
+     */
+    function _registerHandlers() {
+        EditorManager.off("activeEditorChange", _onActiveEditorChanged);
+        EditorManager.on("activeEditorChange", _onActiveEditorChanged);
+    }
+
     function init() {
         _registerCommands();
+        _registerHandlers();
         _addIconToToolbar();
         _addItemsToMenu();
         _addItemsToContextMenu();

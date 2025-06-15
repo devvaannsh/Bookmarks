@@ -20,7 +20,8 @@ define(function (require, exports, module) {
         if (!filePath) {
             return Globals.BookmarksList;
         } else {
-            return Globals.BookmarksList[filePath];
+            // just check if in the bookmarksList that file is present or not, if not just return an empty array
+            return (filePath in Globals.BookmarksList) ? Globals.BookmarksList[filePath] : [];
         }
     }
 

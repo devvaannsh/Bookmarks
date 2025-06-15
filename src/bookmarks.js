@@ -136,7 +136,35 @@ define(function (require, exports, module) {
         editor.setCursorPos(prevBookmark, 0);
     }
 
+    /**
+     * This function is to update the UI as per the bookmarks list
+     * Here is why it is needed, when we load the bookmarksList from preferences, then the list is set
+     * but we bookmarks icon is not visible in the gutter yet
+     * So what we do is whenever any editor is opened, we just check if it has bookmarks, if it does, we display the bookmarks
+     *
+     * @param {Editor} editor - the editor instance
+     */
+    function updateUIasPerBookmarksList(editor) {
+        const filePath = editor.document.file.fullPath;
+        if (!filePath) {
+            return;
+        }
+
+        // a list of all the bookmarked lines for this current file
+        const bookmarkedLines = BookmarksList.getBookmarksList(filePath);
+
+        if (bookmarkedLines.length === 0) {
+            return;
+        }
+
+        for (let i = 0; i < bookmarkedLines.length; i++) {
+            const line = bookmarkedLines[i];
+            editor.setGutterMarker(line, GUTTER_NAME, Helper.createBookmarkMarker());
+        }
+    }
+
     exports.toggleBookmark = toggleBookmark;
     exports.goToNextBookmark = goToNextBookmark;
     exports.goToPrevBookmark = goToPrevBookmark;
+    exports.updateUIasPerBookmarksList = updateUIasPerBookmarksList;
 });
