@@ -25,7 +25,7 @@ define(function (require, exports, module) {
             const $bookmarkIcon = $("<div>").addClass("bookmark-icon").text("box");
             const $lineNumber = $("<div>")
                 .addClass("line-number")
-                .text(fileBookmarkList[i] + 1);
+                .text(`Ln ${(fileBookmarkList[i] + 1)}`);
 
             // Get the line content asynchronously
             const lineContent = await PanelHelper.getLineContent(filePath, fileBookmarkList[i]);
