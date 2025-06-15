@@ -22,7 +22,7 @@ define(function (require, exports, module) {
      * This function is to display the bookmarks list if there are any bookmarks
      * otherwise it calls the required function to show the message that there are no bookmarks
      */
-    function _showBookmarksList() {
+    async function _showBookmarksList() {
         const bookmarksList = BookmarksList.getBookmarksList();
 
         if (Object.keys(bookmarksList).length === 0) {
@@ -30,7 +30,7 @@ define(function (require, exports, module) {
             Helper.showNoBookmarksMessage();
         } else {
             Helper.hideNoBookmarksMessage();
-            PanelUI.createBookmarksUI(bookmarksList);
+            await PanelUI.createBookmarksUI(bookmarksList);
         }
     }
 
@@ -38,10 +38,10 @@ define(function (require, exports, module) {
      * This function is called when the bookmarks toolbar icon is clicked for the first time
      * and the panel is not yet created
      */
-    function _createBookmarksPanel() {
+    async function _createBookmarksPanel() {
         BookmarksPanel = WorkspaceManager.createPluginPanel(BOOKMARKS_PANEL_ID, $(panelHtml), 200, $(), 400);
         BookmarksPanel.show();
-        _showBookmarksList();
+        await _showBookmarksList();
     }
 
     /**

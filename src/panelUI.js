@@ -14,7 +14,7 @@ define(function (require, exports, module) {
      * @param {String} filePath - the file path
      * @param {HTMLElement} $bookmarkItem - the bookmarked item, we need this because we wanna append the bookmarked lines element inside it
      */
-    function _createFileBookmarksListUI(fileBookmarkList, filePath, $bookmarkItem) {
+    async function _createFileBookmarksListUI(fileBookmarkList, filePath, $bookmarkItem) {
         // There can be many bookmarked-line...all of them will be appended inside this
         // NOTE: Don't get confused in the name: this is bookmarked-line'S' not bookmarked-line
         const $bookmarkedLines = $("<div>").addClass("bookmarked-lines");
@@ -26,7 +26,11 @@ define(function (require, exports, module) {
             const $lineNumber = $("<div>")
                 .addClass("line-number")
                 .text(fileBookmarkList[i] + 1);
-            const $lineContent = $("<div>").addClass("line-content").text("function hello() {");
+
+            // Get the line content asynchronously
+            const lineContent = await PanelHelper.getLineContent(filePath, fileBookmarkList[i]);
+            const $lineContent = $("<div>").addClass("line-content").text(lineContent);
+
             const $deleteBookmark = $("<div>").addClass("delete-bookmark").html(`<i class="fas fa-times"></i>`);
 
             $bookmarkedLine.append($bookmarkIcon);
@@ -47,11 +51,12 @@ define(function (require, exports, module) {
      *
      * @param {Object} bookmarksList - the main bookmarks list object which has the filePaths and all the bookmarked line no.s
      */
-    function createBookmarksUI(bookmarksList) {
+    async function createBookmarksUI(bookmarksList) {
         // this is the main bookmarks wrapper inside it all the panel bookmarks stuff will come
         const $bookmarksWrapper = $("#bookmarks-wrapper");
         $bookmarksWrapper.empty(); // just clear it, as we're remaking it
 
+        // Process each file sequentially to maintain order
         for (let filePath in bookmarksList) {
             const fileBookmarkList = bookmarksList[filePath];
 
@@ -89,8 +94,8 @@ define(function (require, exports, module) {
             // append the file header to the bookmark item
             $bookmarkItem.append($bookmarkFileHeader);
 
-            // create and append the bookmarked lines to this bookmark item
-            _createFileBookmarksListUI(fileBookmarkList, filePath, $bookmarkItem);
+            // create and append the bookmarked lines to this bookmark item (await the async function)
+            await _createFileBookmarksListUI(fileBookmarkList, filePath, $bookmarkItem);
 
             // finally append the complete bookmark item to the wrapper
             $bookmarksWrapper.append($bookmarkItem);

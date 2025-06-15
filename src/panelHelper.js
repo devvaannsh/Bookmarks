@@ -5,6 +5,44 @@
 define(function (require, exports, module) {
     const ViewUtils = brackets.getModule("utils/ViewUtils");
     const WorkingSetView = brackets.getModule("project/WorkingSetView");
+    const FileSystem = brackets.getModule("filesystem/FileSystem");
+    const DocumentManager = brackets.getModule("document/DocumentManager");
+
+
+    /**
+     * This function is responsible to get the line content that is to be displayed in the panel UI
+     * it uses document manager if the file is open, otherwise reverts back to FileSystem
+     *
+     * @param {String} filePath - the file path from which we want to get the line content
+     * @param {Number} lineNumber - the line number in the file to fetch the content
+     * @returns {Promise} - resolving the content of the line
+     */
+    function getLineContent(filePath, lineNumber) {
+        return new Promise((resolve) => {
+            // first we try to get the document if it's already open (for efficiency purposes)
+            const openDoc = DocumentManager.getOpenDocumentForPath(filePath);
+
+            if (openDoc) {
+                // If document is already open, get the line directly
+                const lineContent = openDoc.getLine(lineNumber);
+                resolve(lineContent ? lineContent.trim() : "");
+            } else {
+                // If document is not open, we need to read from file system
+                const file = FileSystem.getFileForPath(filePath);
+
+                file.read((err, data) => {
+                    if (err) {
+                        resolve("");
+                        return;
+                    }
+
+                    const lines = data.split("\n");
+                    const lineContent = lines[lineNumber] || "";
+                    resolve(lineContent.trim());
+                });
+            }
+        });
+    }
 
     /**
      * This function is responsible to get the file data from the file path
@@ -50,7 +88,6 @@ define(function (require, exports, module) {
         return $link.children().first();
     }
 
-
     /**
      * This function gets triggered when the dropdown icon in the file header gets clicked
      * it is to show/hide the bookmarks for that file
@@ -59,7 +96,6 @@ define(function (require, exports, module) {
     function fileDropdownClicked(e) {
         e.stopPropagation();
     }
-
 
     /**
      * This function gets triggered when the clear (trash bin) icon in the file header gets clicked
@@ -70,6 +106,7 @@ define(function (require, exports, module) {
         e.stopPropagation();
     }
 
+    exports.getLineContent = getLineContent;
     exports.getFilePathData = getFilePathData;
     exports.getFileIcon = getFileIcon;
     exports.fileDropdownClicked = fileDropdownClicked;
