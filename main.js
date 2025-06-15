@@ -5,6 +5,7 @@ define(function (require, exports, module) {
     const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
     const Editor = brackets.getModule("editor/Editor").Editor;
     const EditorManager = brackets.getModule("editor/EditorManager");
+    const MainViewManager = brackets.getModule("view/MainViewManager");
 
     const Preferences = require("./src/preferences");
     const Bookmarks = require("./src/bookmarks");
@@ -106,22 +107,29 @@ define(function (require, exports, module) {
         Bookmarks.updateUIasPerBookmarksList(editor);
     }
 
-
     /**
      * registers the required handlers
      */
     function _registerHandlers() {
         EditorManager.off("activeEditorChange", _onActiveEditorChanged);
         EditorManager.on("activeEditorChange", _onActiveEditorChanged);
+
+        // we need to do this to show the bookmarks as soon as the editor loads
+        // because when a editor is already open, the 'activeEditorChange' event doesn't get fired
+        // also, getAllViewedEditors is being used to handle split pane cases well
+        const Editors = MainViewManager.getAllViewedEditors();
+        for (let i = 0; i < Editors.length; i++) {
+            Bookmarks.updateUIasPerBookmarksList(Editors[i].editor);
+        }
     }
 
     function init() {
+        Preferences.loadBookmarksFromState();
         _registerCommands();
         _registerHandlers();
         _addIconToToolbar();
         _addItemsToMenu();
         _addItemsToContextMenu();
-        Preferences.loadBookmarksFromState();
     }
 
     AppInit.appReady(function () {

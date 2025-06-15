@@ -145,6 +145,10 @@ define(function (require, exports, module) {
      * @param {Editor} editor - the editor instance
      */
     function updateUIasPerBookmarksList(editor) {
+        if (!editor) {
+            return;
+        }
+
         const filePath = editor.document.file.fullPath;
         if (!filePath) {
             return;
@@ -152,7 +156,6 @@ define(function (require, exports, module) {
 
         // a list of all the bookmarked lines for this current file
         const bookmarkedLines = BookmarksList.getBookmarksList(filePath);
-
         if (bookmarkedLines.length === 0) {
             return;
         }
