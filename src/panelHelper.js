@@ -7,7 +7,7 @@ define(function (require, exports, module) {
     const WorkingSetView = brackets.getModule("project/WorkingSetView");
     const FileSystem = brackets.getModule("filesystem/FileSystem");
     const DocumentManager = brackets.getModule("document/DocumentManager");
-
+    const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
 
     /**
      * This function is responsible to get the line content that is to be displayed in the panel UI
@@ -88,6 +88,15 @@ define(function (require, exports, module) {
         return $link.children().first();
     }
 
+    function getBookmarkSVGIcon() {
+        const iconPath = ExtensionUtils.getModulePath(module, "../assets/bookmark.svg");
+
+        // create the bookmark icon HTML using the SVG file
+        const bookmarkIcon = `<img src="${iconPath}" style="filter: brightness(1) invert(1);"/>`;
+
+        return bookmarkIcon;
+    }
+
     /**
      * This function gets triggered when the dropdown icon in the file header gets clicked
      * it is to show/hide the bookmarks for that file
@@ -106,6 +115,7 @@ define(function (require, exports, module) {
         e.stopPropagation();
     }
 
+    exports.getBookmarkSVGIcon = getBookmarkSVGIcon;
     exports.getLineContent = getLineContent;
     exports.getFilePathData = getFilePathData;
     exports.getFileIcon = getFileIcon;

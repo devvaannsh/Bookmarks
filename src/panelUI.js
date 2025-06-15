@@ -3,9 +3,10 @@
  */
 
 define(function (require, exports, module) {
-
     const PanelHelper = require("./panelHelper");
 
+    // the bookmark SVG icon that is displayed in the panel bookmarks list (at the left side of each bookmarked line)
+    const $BookmarkSVGIcon = PanelHelper.getBookmarkSVGIcon();
 
     /**
      * This function is responsible to create the elements for each bookmark inside a file
@@ -22,10 +23,10 @@ define(function (require, exports, module) {
         for (let i = 0; i < fileBookmarkList.length; i++) {
             const $bookmarkedLine = $("<div>").addClass("bookmarked-line");
 
-            const $bookmarkIcon = $("<div>").addClass("bookmark-icon").text("box");
+            const $bookmarkIcon = $("<div>").addClass("bookmark-icon").html($BookmarkSVGIcon);
             const $lineNumber = $("<div>")
                 .addClass("line-number")
-                .text(`Ln ${(fileBookmarkList[i] + 1)}`);
+                .text(`Ln ${fileBookmarkList[i] + 1}`);
 
             // Get the line content asynchronously
             const lineContent = await PanelHelper.getLineContent(filePath, fileBookmarkList[i]);
@@ -43,7 +44,6 @@ define(function (require, exports, module) {
 
         $bookmarkItem.append($bookmarkedLines);
     }
-
 
     /**
      * This function is the main function which holds all the code to create the bookmarks UI that is to be displayed when the bookmarks icon in the toolbar is clicked
