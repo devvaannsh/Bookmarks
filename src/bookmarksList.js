@@ -6,18 +6,9 @@
 
 define(function (require, exports, module) {
     const Globals = require("./globals");
+    const Preferences = require("./preferences");
 
     const GUTTER_NAME = Globals.GUTTER_NAME;
-
-    /**
-     * This is an object that will store all the list of the bookmarks
-     * The filePath will be the key and its value will be an array which will have all the line numbers where bookmarks are present
-     * For ex: {
-        Bookmarks/src/main: [10, 20, 21, 24, 199],
-        Bookmarks/src/bookmarks: [2, 5]
-     }
-     */
-    const BookmarksList = {};
 
     /**
      * getter function: returns the bookmarks list
@@ -27,9 +18,9 @@ define(function (require, exports, module) {
      */
     function getBookmarksList(filePath = null) {
         if (!filePath) {
-            return BookmarksList;
+            return Globals.BookmarksList;
         } else {
-            return BookmarksList[filePath];
+            return Globals.BookmarksList[filePath];
         }
     }
 
@@ -40,7 +31,7 @@ define(function (require, exports, module) {
      * @param {String} filePath - to get the array list for that specific file
      */
     function _sortBookmarkedLinesForFile(filePath) {
-        BookmarksList[filePath].sort((a, b) => a - b);
+        Globals.BookmarksList[filePath].sort((a, b) => a - b);
     }
 
     /**
@@ -52,18 +43,19 @@ define(function (require, exports, module) {
      * @param {Boolean} noSort - sometimes we call this function internally to just refresh the bookmarks list as per the UI, to make sure that the Bookmarks list line numbers remains consistent to the UI. (Didn't understand: read the `updateBookmarksAsPerUI` function's jsdoc)...so when noSort is true, we don't call the `_sortBookmarkedLinesForFile` because it is already coming in a sorted manner as we are traversing the whole file from top to bottom, so to prevent function overheads and make it efficient, we pass true to noSort, this defaults to false.
      */
     function addLineToBookmarks(filePath, line, noSort = false) {
-        if (!BookmarksList[filePath]) {
+        if (!Globals.BookmarksList[filePath]) {
             // if filePath is not present, add it
-            BookmarksList[filePath] = [line];
+            Globals.BookmarksList[filePath] = [line];
         } else {
-            if (!BookmarksList[filePath].includes(line)) {
+            if (!Globals.BookmarksList[filePath].includes(line)) {
                 // make sure that line is not already in the bookmarks list
-                BookmarksList[filePath].push(line);
+                Globals.BookmarksList[filePath].push(line);
                 if (!noSort) {
                     _sortBookmarkedLinesForFile(filePath); // this is important so that go to next/prev works as expected
                 }
             }
         }
+        Preferences.saveBookmarksToState();
     }
 
     /**
@@ -74,7 +66,7 @@ define(function (require, exports, module) {
      * @param {Number} line - the line number to remove
      */
     function removeLineFromBookmarks(filePath, line) {
-        const lines = BookmarksList[filePath];
+        const lines = Globals.BookmarksList[filePath];
 
         if (lines) {
             const index = lines.indexOf(line);
@@ -83,10 +75,11 @@ define(function (require, exports, module) {
 
                 if (lines.length === 0) {
                     // clean up file paths if no more lines are present
-                    delete BookmarksList[filePath];
+                    delete Globals.BookmarksList[filePath];
                 }
             }
         }
+        Preferences.saveBookmarksToState();
     }
 
     /**
@@ -99,7 +92,7 @@ define(function (require, exports, module) {
      */
     function updateBookmarksAsPerUI(editor, filePath) {
         // empty all the current bookmarks for the file path
-        BookmarksList[filePath] = [];
+        Globals.BookmarksList[filePath] = [];
 
         const lineCount = editor.lineCount();
 
@@ -111,6 +104,7 @@ define(function (require, exports, module) {
                 addLineToBookmarks(filePath, line, true); // 3rd para is for noSorting...read the `addLineToBookmarks` function's jsdoc
             }
         }
+        Preferences.saveBookmarksToState();
     }
 
     exports.getBookmarksList = getBookmarksList;

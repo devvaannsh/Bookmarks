@@ -5,6 +5,7 @@ define(function (require, exports, module) {
     const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
     const Editor = brackets.getModule("editor/Editor").Editor;
 
+    const Preferences = require("./src/preferences");
     const Bookmarks = require("./src/bookmarks");
     const Globals = require("./src/globals");
     const BookmarksPanel = require("./src/bookmarksPanel");
@@ -99,6 +100,7 @@ define(function (require, exports, module) {
         _addIconToToolbar();
         _addItemsToMenu();
         _addItemsToContextMenu();
+        Preferences.loadBookmarksFromState();
     }
 
     AppInit.appReady(function () {
