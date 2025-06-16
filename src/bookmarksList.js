@@ -21,7 +21,7 @@ define(function (require, exports, module) {
             return Globals.BookmarksList;
         } else {
             // just check if in the bookmarksList that file is present or not, if not just return an empty array
-            return (filePath in Globals.BookmarksList) ? Globals.BookmarksList[filePath] : [];
+            return filePath in Globals.BookmarksList ? Globals.BookmarksList[filePath] : [];
         }
     }
 
@@ -61,7 +61,6 @@ define(function (require, exports, module) {
 
     /**
      * This function is called when we want to remove a line from the bookmarks list
-     * it is called inside the `toggleBookmark` function inside ./bookmarks.js
      *
      * @param {String} filePath - to remove the line number from the list of that particular file
      * @param {Number} line - the line number to remove
@@ -69,7 +68,7 @@ define(function (require, exports, module) {
     function removeLineFromBookmarks(filePath, line) {
         const lines = Globals.BookmarksList[filePath];
 
-        if (lines) {
+        if (lines.length !== 0) {
             const index = lines.indexOf(line);
             if (index !== -1) {
                 lines.splice(index, 1); // remove the line from the array
@@ -79,8 +78,8 @@ define(function (require, exports, module) {
                     delete Globals.BookmarksList[filePath];
                 }
             }
+            Preferences.saveBookmarksToState();
         }
-        Preferences.saveBookmarksToState();
     }
 
     /**

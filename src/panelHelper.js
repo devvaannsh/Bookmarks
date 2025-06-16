@@ -9,6 +9,9 @@ define(function (require, exports, module) {
     const DocumentManager = brackets.getModule("document/DocumentManager");
     const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
 
+    const Globals = require('./globals');
+    const Preferences = require('./preferences');
+
     /**
      * This function is responsible to get the line content that is to be displayed in the panel UI
      * it uses document manager if the file is open, otherwise reverts back to FileSystem
@@ -113,6 +116,16 @@ define(function (require, exports, module) {
      */
     function fileClearBtnClicked(e) {
         e.stopPropagation();
+        try {
+            const filePath = $(e.target).closest(".file-clear").siblings(".file-path")[0].innerText;
+            if (filePath) {
+                delete Globals.BookmarksList[filePath];
+                Preferences.saveBookmarksToState();
+            }
+        } catch {
+            console.error("cannot delete bookmarks as file-path was not found");
+            return;
+        }
     }
 
     exports.getBookmarkSVGIcon = getBookmarkSVGIcon;

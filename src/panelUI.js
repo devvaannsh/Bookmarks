@@ -75,6 +75,13 @@ define(function (require, exports, module) {
 
             // the file heading items
             const $fileDropdown = $("<div>").addClass("file-dropdown").html(`<i class="fas fa-chevron-right"></i>`);
+
+            // this will always be hidden. then why do we need this
+            // the reason is when we want to delete a bookmark, we want to fetch the exact file for which we want to delete
+            // so we can get the closest 'file-path' when a delete/trash button is clicked
+            const $filePath = $("<div>").addClass("file-path").text(filePath);
+            $filePath.css("display", "none");
+
             const $fileIcon = $("<div>").addClass("file-icon").html($fileIconElement);
             const $fileName = $("<div>").addClass("file-name").text(fileData.name);
             const $fileDirname = $("<div>").addClass("file-dirname").text(fileData.dirName);
@@ -86,6 +93,7 @@ define(function (require, exports, module) {
 
             // append all that to bookmarkFileHeader
             $bookmarkFileHeader.append($fileDropdown);
+            $bookmarkFileHeader.append($filePath);
             $bookmarkFileHeader.append($fileIcon);
             $bookmarkFileHeader.append($fileName);
             $bookmarkFileHeader.append($fileDirname);
