@@ -102,12 +102,30 @@ define(function (require, exports, module) {
     }
 
     /**
+     * This function is responsible to just change the dropdown icon
+     * @private
+     * @param {JQuery} $fileDropdownIcon - the file dropdown div
+     */
+    function _changeDropdownIcon($fileDropdownIcon) {
+        $fileDropdownIcon[0].classList.toggle("fa-chevron-right");
+        $fileDropdownIcon[0].classList.toggle("fa-chevron-down");
+    }
+
+    /**
      * This function gets triggered when the dropdown icon in the file header gets clicked
      * it is to show/hide the bookmarks for that file
      * @param {Event} e - the event
      */
     function fileDropdownClicked(e) {
         e.stopPropagation();
+
+        const $fileDropdownElement = $(e.target).closest(".file-dropdown");
+        const $fileDropdownIcon = $fileDropdownElement.find("i");
+        const $bookmarkFileHeader = $fileDropdownElement.closest(".bookmark-file-header");
+        const $bookmarkFileItems = $bookmarkFileHeader.siblings(".bookmarked-lines");
+
+        _changeDropdownIcon($fileDropdownIcon);
+        $bookmarkFileItems.toggleClass("hidden");
     }
 
     /**

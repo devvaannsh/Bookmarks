@@ -18,7 +18,7 @@ define(function (require, exports, module) {
     async function _createFileBookmarksListUI(fileBookmarkList, filePath, $bookmarkItem) {
         // There can be many bookmarked-line...all of them will be appended inside this
         // NOTE: Don't get confused in the name: this is bookmarked-line'S' not bookmarked-line
-        const $bookmarkedLines = $("<div>").addClass("bookmarked-lines");
+        const $bookmarkedLines = $("<div>").addClass("bookmarked-lines hidden");
 
         for (let i = 0; i < fileBookmarkList.length; i++) {
             const $bookmarkedLine = $("<div>").addClass("bookmarked-line");
