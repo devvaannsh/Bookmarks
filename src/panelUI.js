@@ -34,6 +34,8 @@ define(function (require, exports, module) {
 
             const $deleteBookmark = $("<div>").addClass("delete-bookmark").html(`<i class="fas fa-times"></i>`);
 
+            $deleteBookmark.on("click", PanelHelper.fileDeleteBtnClicked);
+
             $bookmarkedLine.append($bookmarkIcon);
             $bookmarkedLine.append($lineNumber);
             $bookmarkedLine.append($lineContent);

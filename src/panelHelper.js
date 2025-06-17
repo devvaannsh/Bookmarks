@@ -9,8 +9,9 @@ define(function (require, exports, module) {
     const DocumentManager = brackets.getModule("document/DocumentManager");
     const ExtensionUtils = brackets.getModule("utils/ExtensionUtils");
 
-    const Globals = require('./globals');
-    const Preferences = require('./preferences');
+    const Globals = require("./globals");
+    const Preferences = require("./preferences");
+    const BookmarksList = require("./bookmarksList");
 
     /**
      * This function is responsible to get the line content that is to be displayed in the panel UI
@@ -123,7 +124,36 @@ define(function (require, exports, module) {
                 Preferences.saveBookmarksToState();
             }
         } catch {
-            console.error("cannot delete bookmarks as file-path was not found");
+            console.error("something went wrong when trying to delete bookmarks");
+            return;
+        }
+    }
+
+    /**
+     * This function gets triggered when the user tries to delete a specific bookmark by clicking on the 'times' button
+     * it deletes that particular bookmark
+     * @param {Event} e - the event
+     */
+    function fileDeleteBtnClicked(e) {
+        e.stopPropagation();
+
+        try {
+            // get the file path from DOM
+            const filePath = $(e.target)
+                .closest(".bookmarked-lines")
+                .siblings(".bookmark-file-header")
+                .find(".file-path")[0].innerText;
+            const lineNumberElement = $(e.target).closest(".delete-bookmark").siblings(".line-number")[0].innerText;
+
+            // we need to do this because lineNumberElement is in the format "ln: 33"
+            // 33 is just an example. we need to fetch the actual number from the string
+            const lineNumber = parseInt(lineNumberElement.match(/\d+/)[0], 10);
+
+            if (filePath && lineNumber) {
+                BookmarksList.removeLineFromBookmarks(filePath, lineNumber - 1);
+            }
+        } catch {
+            console.error("something went wrong when trying to delete bookmark");
             return;
         }
     }
@@ -134,4 +164,5 @@ define(function (require, exports, module) {
     exports.getFileIcon = getFileIcon;
     exports.fileDropdownClicked = fileDropdownClicked;
     exports.fileClearBtnClicked = fileClearBtnClicked;
+    exports.fileDeleteBtnClicked = fileDeleteBtnClicked;
 });
