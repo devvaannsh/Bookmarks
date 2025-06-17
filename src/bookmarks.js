@@ -156,13 +156,11 @@ define(function (require, exports, module) {
 
         // a list of all the bookmarked lines for this current file
         const bookmarkedLines = BookmarksList.getBookmarksList(filePath);
-        if (bookmarkedLines.length === 0) {
-            // remove all the bookmark icons
-            const totalLines = editor.lineCount();
-            for (let i = 0; i < totalLines; i++) {
-                editor.setGutterMarker(i, GUTTER_NAME, "");
-            }
-            return;
+
+        // remove all the bookmark icons and start from fresh
+        const totalLines = editor.lineCount();
+        for (let i = 0; i < totalLines; i++) {
+            editor.setGutterMarker(i, GUTTER_NAME, "");
         }
 
         for (let i = 0; i < bookmarkedLines.length; i++) {
